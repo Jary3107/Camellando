@@ -42,7 +42,3 @@ crud-estudiantes-xampp/
   ```
 
 
-## Cuentas Semilla Iniciales
-
-* Trabajador:`juan@example.com` | Clave:`123`
-* Cliente:`carlos@example.com` | Clave:`123`
