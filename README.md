@@ -1,14 +1,8 @@
 # Camellando 
 
-API desarrollada con Python y FastAPI orientada a conectar trabajadores independientes y técnicos locales con oportunidades de empleo y solicitudes de servicios dentro de su comunidad.
+API básica e intuitiva en FastAPI para conectar trabajadores independientes con usuarios que buscan servicios. Diseñada específicamente como un primer avance realizado en 3 días de desarrollo para facilitar su sustentación universitaria.
 
-## Descripción del Proyecto
-
-Camellando es una API desarrollada con FastAPI, diseñada para facilitar la conexión entre trabajadores independientes, técnicos locales y usuarios que requieren servicios dentro de su comunidad.
-
-El proyecto tiene como alcance el desarrollo de un MVP (Producto Mínimo Viable), enfocado en construir las funcionalidades esenciales necesarias para validar la propuesta de valor de la plataforma.
-
-Actualmente, se ha desarrollado la estructura base o esqueleto inicial del sistema, estableciendo la arquitectura y organización del proyecto que permitirá la implementación progresiva de los módulos y funcionalidades.
+---
 
 ## Integrantes del Grupo
 
@@ -17,59 +11,38 @@ Actualmente, se ha desarrollado la estructura base o esqueleto inicial del siste
 * Jary Alejandra Preston Oliveros
 * Julián Zuluaga Castillo
 
-## Tecnologías Utilizadas
+---
 
-* Python 3.8+
-* FastAPI
-* Uvicorn
-* Virtual Environment (venv)
-* REST API
+## Estructura del Proyecto
 
-## Instalación y Configuración Local
-
-### 1. Clonar el repositorio
-
-```bash
-git clone <URL_DEL_REPOSITORIO>
-cd Camellando
+```
+crud-estudiantes-xampp/
+│
+├── main.py               # Base de datos, tablas, esquemas y endpoints
+├── Dockerfile            # Configuración Docker básica
+├── docker-compose.yml    # Orquestación de Docker
+├── requirements.txt      # Solo 3 Dependencias (FastAPI, Uvicorn, SQLAlchemy)
+└── README.md             # Guía del proyecto
 ```
 
-### 2. Crear un entorno virtual
+## Configuración y Ejecución
 
-```bash
-python -m venv venv
-```
+### 1. Crear entorno e instalar dependencias
+* **Windows (PowerShell):**
+  ```powershell
+  python -m venv venv
+  .\venv\Scripts\Activate.ps1
+  pip install -r requirements.txt
+  ```
+* **Linux / macOS:**
+  ```bash
+  python3 -m venv venv
+  source venv/bin/activate
+  pip install -r requirements.txt
+  ```
 
-### 3. Activar el entorno virtual
 
-Windows (PowerShell):
+## Cuentas Semilla Iniciales
 
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-Linux / macOS:
-
-```bash
-source venv/bin/activate
-```
-
-### 4. Instalar dependencias
-
-```bash
-pip install -r requirements.txt
-```
-
-### 5. Ejecutar el proyecto
-
-```bash
-uvicorn main:app --reload
-```
-
-## Objetivo
-
-Desarrollar un MVP que permita validar una plataforma tecnológica enfocada en conectar trabajadores independientes y clientes potenciales mediante servicios digitales accesibles.
-
-## Licencia
-
-Este proyecto es desarrollado con fines académicos.
+* Trabajador:`juan@example.com` | Clave:`123`
+* Cliente:`carlos@example.com` | Clave:`123`

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: camellando_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Monta la carpeta del proyecto para desarrollo local (recarga en caliente opcional)
+      # Y asegura la persistencia del archivo SQLite camellando.db en el host
+      - .:/code
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:///./camellando.db
+    restart: always
