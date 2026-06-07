@@ -1,39 +1,75 @@
-# Camellando
+# Camellando 
 
-Proyecto inicializado con Python y FastAPI.
+API desarrollada con Python y FastAPI orientada a conectar trabajadores independientes y técnicos locales con oportunidades de empleo y solicitudes de servicios dentro de su comunidad.
+
+## Descripción del Proyecto
+
+Camellando es una API desarrollada con FastAPI, diseñada para facilitar la conexión entre trabajadores independientes, técnicos locales y usuarios que requieren servicios dentro de su comunidad.
+
+El proyecto tiene como alcance el desarrollo de un MVP (Producto Mínimo Viable), enfocado en construir las funcionalidades esenciales necesarias para validar la propuesta de valor de la plataforma.
+
+Actualmente, se ha desarrollado la estructura base o esqueleto inicial del sistema, estableciendo la arquitectura y organización del proyecto que permitirá la implementación progresiva de los módulos y funcionalidades.
 
 ## Integrantes del Grupo
 
-- [Integrante 1]
-- [Integrante 2]
-- [Integrante 3]
+* Emanuel González Henao
+* Luis Miguel Osorio Marín
+* Jary Alejandra Preston Oliveros
+* Julián Zuluaga Castillo
 
-## Descripción
+## Tecnologías Utilizadas
 
-"Camellando" es una API moderna desarrollada con FastAPI para...
+* Python 3.8+
+* FastAPI
+* Uvicorn
+* Virtual Environment (venv)
+* REST API
 
-## Configuración y Ejecución Local
+## Instalación y Configuración Local
 
-1. Asegúrate de tener Python instalado (versión 3.8 o superior recomendada).
-2. Crea un entorno virtual:
-   ```bash
-   python -m venv venv
-   ```
-3. Activa el entorno virtual:
-   - **Windows (PowerShell):**
-     ```powershell
-     .\venv\Scripts\Activate.ps1
-     ```
-   - **Linux / macOS:**
-     ```bash
-     source venv/bin/activate
-     ```
-4. Instala las dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
-5. Ejecuta la aplicación:
-   ```bash
-   uvicorn main:app --reload
-   ```
-6. Abre tu navegador en [http://127.0.0.1:8000](http://127.0.0.1:8000) o accede a la documentación interactiva en [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+### 1. Clonar el repositorio
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd Camellando
+```
+
+### 2. Crear un entorno virtual
+
+```bash
+python -m venv venv
+```
+
+### 3. Activar el entorno virtual
+
+Windows (PowerShell):
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+Linux / macOS:
+
+```bash
+source venv/bin/activate
+```
+
+### 4. Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Ejecutar el proyecto
+
+```bash
+uvicorn main:app --reload
+```
+
+## Objetivo
+
+Desarrollar un MVP que permita validar una plataforma tecnológica enfocada en conectar trabajadores independientes y clientes potenciales mediante servicios digitales accesibles.
+
+## Licencia
+
+Este proyecto es desarrollado con fines académicos.
