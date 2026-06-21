@@ -408,24 +408,34 @@ def update_contract(contract_id: int, status: str = Query(...), db: Session = De
 
 @app.on_event("startup")
 def startup_db():
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
+    import traceback
     try:
-        if db.query(User).count() == 0:
-            w1 = User(email="juan@example.com", password="123", full_name="Juan Plomero", user_type="worker", phone="300")
-            c1 = User(email="carlos@example.com", password="123", full_name="Carlos Cliente", user_type="client", phone="315")
-            db.add_all([w1, c1])
-            db.commit()
+        print("Iniciando inicialización de base de datos...")
+        print(f"DATABASE_URL configurada: {DATABASE_URL}")
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            if db.query(User).count() == 0:
+                w1 = User(email="juan@example.com", password="123", full_name="Juan Plomero", user_type="worker", phone="300")
+                c1 = User(email="carlos@example.com", password="123", full_name="Carlos Cliente", user_type="client", phone="315")
+                db.add_all([w1, c1])
+                db.commit()
 
-            s1 = Service(title="Reparación de Fugas", description="Plomería del hogar", category="Hogar", price=30000, worker_id=w1.id)
-            db.add(s1)
-            db.commit()
+                s1 = Service(title="Reparación de Fugas", description="Plomería del hogar", category="Hogar", price=30000, worker_id=w1.id)
+                db.add(s1)
+                db.commit()
 
-            con1 = Contract(client_id=c1.id, service_id=s1.id, price=30000, details="Gotera cocina", status="pending")
-            db.add(con1)
-            db.commit()
-    finally:
-        db.close()
+                con1 = Contract(client_id=c1.id, service_id=s1.id, price=30000, details="Gotera cocina", status="pending")
+                db.add(con1)
+                db.commit()
+        finally:
+            db.close()
+        print("Base de datos inicializada correctamente.")
+    except Exception as e:
+        print("ERROR DURANTE LA INICIALIZACIÓN DE LA BASE DE DATOS:")
+        traceback.print_exc()
+        raise e
+
 
 if __name__ == "__main__":
     import uvicorn
