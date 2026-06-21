@@ -12,7 +12,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./camellando.db")
+if os.environ.get("VERCEL"):
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////tmp/camellando.db")
+else:
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./camellando.db")
+
 
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
