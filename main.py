@@ -2,16 +2,47 @@ import os
 from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from dotenv import load_dotenv
 
-DATABASE_URL = "sqlite:///./camellando.db"
+load_dotenv()
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./camellando.db")
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+import hashlib
+import secrets
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    hash_val = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
+    return f"{salt}:{hash_val.hex()}"
+
+def verify_password(stored_password: str, provided_password: str) -> bool:
+    try:
+        salt, hash_hex = stored_password.split(':')
+        hash_val = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt.encode('utf-8'), 100000)
+        return secrets.compare_digest(hash_val.hex(), hash_hex)
+    except ValueError:
+        # Fallback for plain text passwords
+        return stored_password == provided_password
+
+
 
 def get_db():
     db = SessionLocal()
@@ -65,6 +96,13 @@ class UserOut(BaseModel):
     class Config:
         from_attributes = True
 
+class UserUpdate(BaseModel):
+    email: str
+    full_name: str
+    phone: Optional[str] = None
+    password: Optional[str] = None
+
+
 
 class ServiceCreate(BaseModel):
     title: str
@@ -83,6 +121,13 @@ class ServiceOut(BaseModel):
     class Config:
         from_attributes = True
 
+class ServiceUpdate(BaseModel):
+    title: str
+    description: str
+    category: str
+    price: float
+
+
 
 class ContractCreate(BaseModel):
     client_id: int 
@@ -100,6 +145,34 @@ class ContractOut(BaseModel):
     class Config:
         from_attributes = True
 
+class ServiceDetailOut(BaseModel):
+    id: int
+    title: str
+    description: str
+    category: str
+    price: float
+    worker_id: int
+    worker_name: str
+    worker_phone: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class ContractDetailOut(BaseModel):
+    id: int
+    client_id: int
+    client_name: str
+    client_phone: Optional[str] = None
+    service_id: int
+    service_title: str
+    worker_id: int
+    worker_name: str
+    status: str
+    price: float
+    details: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+
 app = FastAPI(
     title="Camellando",
     description="MVP inicial.",
@@ -114,13 +187,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Servir archivos estáticos
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/")
 def read_root():
-    return {
-        "mensaje": "Bienvenidos a la API de Camellando",
-        "entrega": "Avance 1",
-        "documentacion": "/docs"
-    }
+    return FileResponse("static/index.html")
+
 
 
 @app.post("/api/register", response_model=UserOut)
@@ -131,7 +204,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     
     db_user = User(
         email=user_in.email,
-        password=user_in.password,  
+        password=hash_password(user_in.password),  
         full_name=user_in.full_name,
         user_type=user_in.user_type,
         phone=user_in.phone
@@ -144,15 +217,40 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/api/login")
 def login(email: str = Query(...), password: str = Query(...), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email, User.password == password).first()
-    if not user:
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not verify_password(user.password, password):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     return {
         "status": "success",
         "user_id": user.id,
         "user_type": user.user_type,
-        "full_name": user.full_name
+        "full_name": user.full_name,
+        "email": user.email,
+        "phone": user.phone
     }
+
+@app.put("/api/users/{user_id}", response_model=UserOut)
+def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    if user_in.email != user.email:
+        existing = db.query(User).filter(User.email == user_in.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="El correo ya está registrado por otro usuario")
+    
+    user.full_name = user_in.full_name
+    user.email = user_in.email
+    user.phone = user_in.phone
+    
+    if user_in.password:
+        user.password = hash_password(user_in.password)
+        
+    db.commit()
+    db.refresh(user)
+    return user
+
 
 
 @app.post("/api/services", response_model=ServiceOut)
@@ -174,13 +272,65 @@ def create_service(service_in: ServiceCreate, db: Session = Depends(get_db)):
     db.refresh(db_service)
     return db_service
 
+@app.put("/api/services/{service_id}", response_model=ServiceOut)
+def update_service(service_id: int, service_in: ServiceUpdate, worker_id: int = Query(...), db: Session = Depends(get_db)):
+    service = db.query(Service).filter(Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Servicio no encontrado")
+    
+    if service.worker_id != worker_id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para modificar este servicio")
+        
+    service.title = service_in.title
+    service.description = service_in.description
+    service.category = service_in.category
+    service.price = service_in.price
+    
+    db.commit()
+    db.refresh(service)
+    return service
 
-@app.get("/api/services", response_model=List[ServiceOut])
+@app.delete("/api/services/{service_id}")
+def delete_service(service_id: int, worker_id: int = Query(...), db: Session = Depends(get_db)):
+    service = db.query(Service).filter(Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Servicio no encontrado")
+    
+    if service.worker_id != worker_id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para eliminar este servicio")
+    
+    try:
+        db.delete(service)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="No se puede eliminar el servicio porque tiene contratos asociados")
+        
+    return {"status": "success", "message": "Servicio eliminado correctamente"}
+
+
+
+@app.get("/api/services", response_model=List[ServiceDetailOut])
 def list_services(category: Optional[str] = None, db: Session = Depends(get_db)):
     query = db.query(Service)
     if category:
         query = query.filter(Service.category.ilike(f"%{category}%"))
-    return query.all()
+    services = query.all()
+    
+    result = []
+    for s in services:
+        worker = db.query(User).filter(User.id == s.worker_id).first()
+        result.append(ServiceDetailOut(
+            id=s.id,
+            title=s.title,
+            description=s.description,
+            category=s.category,
+            price=s.price,
+            worker_id=s.worker_id,
+            worker_name=worker.full_name if worker else "Desconocido",
+            worker_phone=worker.phone if worker else None
+        ))
+    return result
 
 @app.post("/api/contracts", response_model=ContractOut)
 def create_contract(contract_in: ContractCreate, db: Session = Depends(get_db)):
@@ -205,16 +355,37 @@ def create_contract(contract_in: ContractCreate, db: Session = Depends(get_db)):
     return db_contract
 
 
-@app.get("/api/contracts", response_model=List[ContractOut])
+@app.get("/api/contracts", response_model=List[ContractDetailOut])
 def list_contracts(user_id: int = Query(...), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=400, detail="Usuario no encontrado")
 
     if user.user_type == "client":
-        return db.query(Contract).filter(Contract.client_id == user_id).all()
+        contracts = db.query(Contract).filter(Contract.client_id == user_id).all()
     else:
-        return db.query(Contract).join(Service).filter(Service.worker_id == user_id).all()
+        contracts = db.query(Contract).join(Service).filter(Service.worker_id == user_id).all()
+
+    result = []
+    for c in contracts:
+        service = db.query(Service).filter(Service.id == c.service_id).first()
+        worker = db.query(User).filter(User.id == service.worker_id).first() if service else None
+        client = db.query(User).filter(User.id == c.client_id).first()
+        
+        result.append(ContractDetailOut(
+            id=c.id,
+            client_id=c.client_id,
+            client_name=client.full_name if client else "Desconocido",
+            client_phone=client.phone if client else None,
+            service_id=c.service_id,
+            service_title=service.title if service else "Servicio Eliminado",
+            worker_id=service.worker_id if service else 0,
+            worker_name=worker.full_name if worker else "Desconocido",
+            status=c.status,
+            price=c.price,
+            details=c.details
+        ))
+    return result
 
 
 @app.patch("/api/contracts/{contract_id}", response_model=ContractOut)

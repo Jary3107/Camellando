@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camellando - Conectando Trabajo Local</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fa-solid fa-briefcase logo-icon"></i>
+                <span class="logo-text">Camellando</span>
+            </div>
+
+            <div class="nav-user-menu" id="nav-user-menu">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+        <!-- ================= LANDING & AUTHENTICATION ================= -->
+        <section id="view-landing" class="view">
+            <div class="hero-section">
+                <h1 class="hero-title">¡Encuentra camello o comparte tus talentos locales!</h1>
+                <p class="hero-subtitle">La plataforma que conecta a trabajadores independientes y clientes de forma
+                    rápida, directa y transparente.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary" onclick="showAuthCard('register')">Registrarse ahora</button>
+                    <button class="btn btn-secondary" onclick="showAuthCard('login')">Iniciar Sesión</button>
+                </div>
+            </div>
+
+            <!-- Auth Cards Container -->
+            <div class="auth-wrapper hidden" id="auth-wrapper">
+                <!-- Login Card -->
+                <div class="auth-card hidden" id="card-login">
+                    <h2><i class="fa-solid fa-right-to-bracket card-icon"></i> Iniciar Sesión</h2>
+                    <form id="form-login" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="login-email">Correo Electrónico</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-envelope input-icon"></i>
+                                <input type="email" id="login-email" required placeholder="correo@ejemplo.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Contraseña</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="login-password" required placeholder="••••••••">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+                        <p class="auth-switch">¿No tienes cuenta? <a href="#"
+                                onclick="toggleAuthForms('register')">Regístrate aquí</a></p>
+                    </form>
+                </div>
+
+                <!-- Register Card -->
+                <div class="auth-card hidden" id="card-register">
+                    <h2><i class="fa-solid fa-user-plus card-icon"></i> Crear Cuenta</h2>
+                    <form id="form-register" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label for="reg-name">Nombre Completo</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="reg-name" required placeholder="Juan Pérez">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email">Correo Electrónico</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-envelope input-icon"></i>
+                                <input type="email" id="reg-email" required placeholder="juan@ejemplo.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-phone">Teléfono / Celular</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-phone input-icon"></i>
+                                <input type="tel" id="reg-phone" required placeholder="3001234567">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password">Contraseña</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Usuario</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="reg-type" value="client" checked>
+                                    <span class="radio-custom-btn">
+                                        <i class="fa-solid fa-handshake"></i> Cliente (Quiero contratar)
+                                    </span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="reg-type" value="worker">
+                                    <span class="radio-custom-btn">
+                                        <i class="fa-solid fa-hammer"></i> Trabajador (Ofrezco servicios)
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
+                        <p class="auth-switch">¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForms('login')">Inicia
+                                sesión</a></p>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= CLIENT DASHBOARD ================= -->
+        <section id="view-client" class="view hidden">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Panel de Cliente</h1>
+                    <p class="subtitle">Explora servicios y gestiona tus contrataciones.</p>
+                </div>
+            </div>
+
+            <!-- Client Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column: Browse Services -->
+                <div class="grid-col-main">
+                    <div class="content-card">
+                        <div class="search-bar-container">
+                            <h3><i class="fa-solid fa-magnifying-glass"></i> Buscar Servicios</h3>
+                            <div class="search-inputs">
+                                <input type="text" id="search-category"
+                                    placeholder="Filtrar por categoría (ej: Hogar, Tutoría, Reparaciones...)">
+                                <button class="btn btn-primary" onclick="loadServices()"><i
+                                        class="fa-solid fa-filter"></i> Filtrar</button>
+                            </div>
+                        </div>
+
+                        <div id="services-list" class="services-grid">
+                            <!-- Populated via JS -->
+                            <div class="loading-state">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando servicios...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: My Contracts -->
+                <div class="grid-col-side">
+                    <div class="content-card">
+                        <h3><i class="fa-solid fa-file-contract"></i> Mis Contratos</h3>
+                        <div id="client-contracts" class="contracts-list">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= WORKER DASHBOARD ================= -->
+        <section id="view-worker" class="view hidden">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Panel de Trabajador</h1>
+                    <p class="subtitle">Administra tus servicios ofrecidos y gestiona tus solicitudes de trabajo.</p>
+                </div>
+            </div>
+
+            <!-- Worker Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column: Services offered and Creation -->
+                <div class="grid-col-side">
+                    <!-- Create Service Card -->
+                    <div class="content-card">
+                        <h3><i class="fa-solid fa-plus-circle"></i> Publicar Nuevo Servicio</h3>
+                        <form id="form-create-service" onsubmit="handleCreateService(event)">
+                            <div class="form-group">
+                                <label for="svc-title">Título del Servicio</label>
+                                <input type="text" id="svc-title" placeholder="Ej: Clases particulares de Cálculo"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="svc-description">Descripción</label>
+                                <textarea id="svc-description" rows="3"
+                                    placeholder="Detalla qué incluye tu servicio, experiencia, etc."
+                                    required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="svc-category">Categoría</label>
+                                <input type="text" id="svc-category"
+                                    placeholder="Ej: Tutorías, Soporte Técnico, Limpieza" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="svc-price">Precio Referencial ($ COP)</label>
+                                <input type="number" id="svc-price" placeholder="Ej: 25000" min="0" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Ofrecer Servicio</button>
+                        </form>
+                    </div>
+
+                    <!-- My Services List -->
+                    <div class="content-card margin-top">
+                        <h3><i class="fa-solid fa-list-check"></i> Mis Servicios Activos</h3>
+                        <div id="worker-services" class="worker-services-list">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Received Contracts -->
+                <div class="grid-col-main">
+                    <div class="content-card">
+                        <h3><i class="fa-solid fa-bell"></i> Solicitudes Recibidas / Contratos</h3>
+                        <div id="worker-contracts" class="contracts-list">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= CONTRACT MODAL ================= -->
+    <div id="contract-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeContractModal()">&times;</span>
+            <h2 id="modal-service-title">Contratar Servicio</h2>
+            <p id="modal-service-worker" class="modal-subtitle"></p>
+
+            <form id="form-create-contract" onsubmit="handleCreateContract(event)">
+                <input type="hidden" id="modal-service-id">
+
+                <div class="form-group">
+                    <label for="contract-price">Precio Acordado ($ COP)</label>
+                    <input type="number" id="contract-price" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="contract-details">Instrucciones o Detalles adicionales</label>
+                    <textarea id="contract-details" rows="3"
+                        placeholder="Ej: Dirección, fecha acordada, condiciones especiales..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeContractModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Propuesta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= EDIT PROFILE MODAL ================= -->
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeProfileModal()">&times;</span>
+            <h2><i class="fa-solid fa-user-gear card-icon"></i> Mi Perfil</h2>
+            <p class="modal-subtitle">Actualiza tu información personal.</p>
+            
+            <form id="form-edit-profile" onsubmit="handleEditProfile(event)">
+                <div class="form-group">
+                    <label for="edit-profile-name">Nombre Completo</label>
+                    <input type="text" id="edit-profile-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-email">Correo Electrónico</label>
+                    <input type="email" id="edit-profile-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-phone">Teléfono / Celular</label>
+                    <input type="tel" id="edit-profile-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-password">Nueva Contraseña (Dejar en blanco para conservar actual)</label>
+                    <input type="password" id="edit-profile-password" placeholder="••••••••">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeProfileModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= EDIT SERVICE MODAL ================= -->
+    <div id="edit-service-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeEditServiceModal()">&times;</span>
+            <h2><i class="fa-solid fa-pen-to-square card-icon"></i> Editar Servicio</h2>
+            <p class="modal-subtitle">Modifica los detalles de tu servicio.</p>
+            
+            <form id="form-edit-service" onsubmit="handleEditService(event)">
+                <input type="hidden" id="edit-service-id">
+                
+                <div class="form-group">
+                    <label for="edit-svc-title">Título del Servicio</label>
+                    <input type="text" id="edit-svc-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-svc-description">Descripción</label>
+                    <textarea id="edit-svc-description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-svc-category">Categoría</label>
+                    <input type="text" id="edit-svc-category" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-svc-price">Precio Referencial ($ COP)</label>
+                    <input type="number" id="edit-svc-price" min="0" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditServiceModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Javascript App -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
